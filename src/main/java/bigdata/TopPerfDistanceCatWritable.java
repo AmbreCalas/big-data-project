@@ -7,21 +7,21 @@ import java.io.IOException;
 import org.apache.hadoop.io.WritableUtils;
 
 public class TopPerfDistanceCatWritable extends TopPerfDistanceWritable {
-	private String age;
+	private String category;
 
 	public void readFields(DataInput in) throws IOException {
 		super.readFields(in);
-		age = WritableUtils.readString(in);
+		category = WritableUtils.readString(in);
 	}
 
 	public void write(DataOutput out) throws IOException {
 		super.write(out);
-		WritableUtils.writeString(out, age);
+		WritableUtils.writeString(out, category);
 	}
 	
 	@Override
 	public String toString() {
-		return super.addableToString(age);
+		return super.addableToString(category);
 	}
 	
 

@@ -9,7 +9,7 @@ import org.apache.hadoop.io.WritableUtils;
 
 public class SumUpWritable implements Writable {
 
-	public String age;
+	public String category;
 	public String distance;
 	public String nbPax;
 	public String minTime;
@@ -17,8 +17,18 @@ public class SumUpWritable implements Writable {
 	public String avgTime;
 	public String avgSpeed;
 	
+	public SumUpWritable(String category, String distance, String nbPax, String minTime, String maxTime, String avgTime, String avgSpeed) {
+		this.category = category;
+		this.distance = distance;
+		this.nbPax = nbPax;
+		this.minTime = minTime;
+		this.maxTime = maxTime;
+		this.avgTime = avgTime;
+		this.avgSpeed = avgSpeed;
+	}
+	
 	public void readFields(DataInput in) throws IOException {
-		age = WritableUtils.readString(in);
+		category = WritableUtils.readString(in);
 		distance = WritableUtils.readString(in);
 		nbPax = WritableUtils.readString(in);
 		minTime = WritableUtils.readString(in);
@@ -28,7 +38,7 @@ public class SumUpWritable implements Writable {
 	}
 
 	public void write(DataOutput out) throws IOException {
-		WritableUtils.writeString(out, age);
+		WritableUtils.writeString(out, category);
 		WritableUtils.writeString(out, distance);
 		WritableUtils.writeString(out, nbPax);
 		WritableUtils.writeString(out, minTime);
@@ -39,7 +49,7 @@ public class SumUpWritable implements Writable {
 	
 	@Override
 	public String toString() {
-		return "(" + age + "," + distance + ") -> " + nbPax + " " + minTime + " " + maxTime + " " + avgTime + " " + avgSpeed;
+		return "(" + category + "," + distance + ") -> " + nbPax + " " + minTime + " " + maxTime + " " + avgTime + " " + avgSpeed;
 	}
 
 }
