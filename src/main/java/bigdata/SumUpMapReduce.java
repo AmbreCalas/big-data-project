@@ -30,8 +30,8 @@ public class SumUpMapReduce {
 				if(parts.length == 9) {
 					category = treatCategory(parts[8]);
 					raceKey = generateKey(parts[2], category);
-					context.write(raceKey, new SumUpWritable(category, parts[2], "1", parts[7], 
-							parts[7], parts[7], Double.toString(speed)));
+					/*context.write(raceKey, new SumUpWritable(category, parts[2], "1", parts[7], 
+							parts[7], parts[7], Double.toString(speed)));*/
 			
 				} 
 				// First name and last name are in the same part
@@ -40,15 +40,15 @@ public class SumUpMapReduce {
 					if(parts[5].charAt(0) >= '0' || parts[5].charAt(0) <= '9') {
 						category = treatCategory(parts[5]);
 						raceKey = generateKey(parts[2], category);	
-						context.write(raceKey, new SumUpWritable(category, parts[2], "1", parts[6], 
-								parts[6], parts[6], Double.toString(speed)));
+						/*context.write(raceKey, new SumUpWritable(category, parts[2], "1", parts[6], 
+								parts[6], parts[6], Double.toString(speed)));*/
 					} 
 					// Category is at the right place
 					else {
 						category = treatCategory(parts[7]);
 						raceKey = generateKey(parts[2], category);
-						context.write(raceKey, new SumUpWritable(category, parts[2], "1", parts[6], 
-								parts[6], parts[6], Double.toString(speed)));		
+						/*context.write(raceKey, new SumUpWritable(category, parts[2], "1", parts[6], 
+								parts[6], parts[6], Double.toString(speed)));*/
 					}
 				}
 			}
@@ -92,7 +92,7 @@ public class SumUpMapReduce {
 				long avgTimeInSeconds = 0;
 				double speedSum = 0;
 				
-				for(SumUpWritable value : values) {
+				/*for(SumUpWritable value : values) {
 					nbPax++;
 					avgTimeInSeconds += Long.parseLong(value.avgTime);
 					speedSum += Double.parseDouble(value.avgSpeed);
@@ -104,12 +104,12 @@ public class SumUpMapReduce {
 					}
 				}
 				double avgSpeed = speedSum / nbPax;
-				
-				SumUpWritable toReturn = new SumUpWritable(category, distance, Long.toString(nbPax), 
+				*/
+				/*SumUpWritable toReturn = new SumUpWritable(category, distance, Long.toString(nbPax), 
 						Long.toString(minTimeInSeconds), Long.toString(maxTimeInSeconds), 
-						Long.toString(avgTimeInSeconds), Double.toString(avgSpeed));
+						Long.toString(avgTimeInSeconds), Double.toString(avgSpeed));*/
 				
-				context.write(key, toReturn);
+				//context.write(key, toReturn);
 			}
 		}
 }

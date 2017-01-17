@@ -1,11 +1,9 @@
 package bigdata;
 
-<<<<<<< HEAD
+
 import java.io.File;
-=======
 import java.io.BufferedReader;
 import java.io.FileReader;
->>>>>>> 089428c637b4c1e011027694d1c8cd07576ee5c5
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -18,12 +16,9 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-<<<<<<< HEAD
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-=======
 import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
->>>>>>> 089428c637b4c1e011027694d1c8cd07576ee5c5
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
@@ -31,8 +26,10 @@ import bigdata.SumUpMapReduce.SumUpMapper;
 import bigdata.SumUpMapReduce.SumUpReducer;
 import bigdata.TopKPerfMapReduce.TopKPerfMapper;
 import bigdata.TopKPerfMapReduce.TopKPerfReducer;
-import bigdata.TopKPopMapReduce.TopKPopMapper;
-import bigdata.TopKPopMapReduce.TopKPopReducer;
+import bigdata.TopKPopMapReduce.TopKPopFirstMapper;
+import bigdata.TopKPopMapReduce.TopKPopFirstReducer;
+import bigdata.TopKPopMapReduce.TopKPopSecondMapper;
+import bigdata.TopKPopMapReduce.TopKPopSecondReducer;
 
 public class ProjectMain {
 	private static String inputFile;
@@ -73,16 +70,41 @@ public class ProjectMain {
 	}
 	
 	private static void topKPopTreatment(String whichTop) throws Exception {
+		String middlePath = "/users/acalas001/TP3_2_ex2";
+		topKPopFirstJob(inputFile, middlePath, whichTop);
+		topKPopSecondJob(middlePath, outputFile, whichTop);
+	}
+	
+	private static void topKPopFirstJob(String input, String output, String whichTop) throws Exception{
 		Configuration conf = new Configuration();		
 		conf.set("kValue", kValue);		
 		conf.set("whichTop", whichTop);
 	    Job job = Job.getInstance(conf, "TopKPopMapReduce");
 	    job.setNumReduceTasks(1);
 	    job.setJarByClass(TopKPopMapReduce.class);
-	    job.setMapperClass(TopKPopMapper.class);
+	    job.setMapperClass(TopKPopFirstMapper.class);
 	    job.setMapOutputKeyClass(Text.class);
 	    job.setMapOutputValueClass(TopRaceWritable.class);
-	    job.setReducerClass(TopKPopReducer.class);
+	    job.setReducerClass(TopKPopFirstReducer.class);
+	    job.setOutputKeyClass(Text.class);
+	    job.setOutputValueClass(TopRaceWritable.class);
+	    job.setOutputFormatClass(TextOutputFormat.class);
+	    FileInputFormat.addInputPath(job, new Path(inputFile));
+	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
+	    job.waitForCompletion(true);
+	}
+	
+	private static void topKPopSecondJob(String input, String output, String whichTop) throws Exception{
+		Configuration conf = new Configuration();		
+		conf.set("kValue", kValue);		
+		conf.set("whichTop", whichTop);
+	    Job job = Job.getInstance(conf, "TopKPopMapReduce");
+	    job.setNumReduceTasks(1);
+	    job.setJarByClass(TopKPopMapReduce.class);
+	    job.setMapperClass(TopKPopSecondMapper.class);
+	    job.setMapOutputKeyClass(Text.class);
+	    job.setMapOutputValueClass(TopRaceWritable.class);
+	    job.setReducerClass(TopKPopSecondReducer.class);
 	    job.setOutputKeyClass(Text.class);
 	    job.setOutputValueClass(TopRaceWritable.class);
 	    job.setOutputFormatClass(TextOutputFormat.class);
@@ -90,6 +112,7 @@ public class ProjectMain {
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);	
 	}
+	
 	
 	
 	private static void topKPerfTreatment(String whichTop) throws Exception {
