@@ -1,5 +1,6 @@
 package bigdata;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -11,6 +12,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
@@ -38,10 +40,23 @@ public class ProjectMain {
 	    job.setReducerClass(SumUpReducer.class);
 	    job.setOutputKeyClass(Text.class);
 	    job.setOutputValueClass(SumUpWritable.class);
+	    job.setInputFormatClass(SequenceFileInputFormat.class);  
 	    job.setOutputFormatClass(TextOutputFormat.class);
-	    job.setInputFormatClass(RandomPointInputFormat.class);  
-	    FileInputFormat.addInputPath(job, new Path(inputFile));
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
+	    
+	    File folder = new File(inputFile);
+	    File[] listOfFiles = folder.listFiles();
+	    /*for (int i = 0; i < listOfFiles.length; i++) {
+	    	if (listOfFiles[i].isFile()) {
+	    		SequenceFileInputFormat.addInputPath(job, new Path(listOfFiles[i].getName()));
+	    		} else if (listOfFiles[i].isDirectory()) {
+	    			System.out.println("Directory " + listOfFiles[i].getName());
+	    			}
+	    	}*/
+	    
+	    //for (Path path: createInputFiles(conf, snapshotFiles, mappers)) {
+	    //    SequenceFileInputFormat.addInputPath(job, path);
+	    //}
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
 	
@@ -59,7 +74,6 @@ public class ProjectMain {
 	    job.setOutputKeyClass(Text.class);
 	    job.setOutputValueClass(TopRaceWritable.class);
 	    job.setOutputFormatClass(TextOutputFormat.class);
-	    job.setInputFormatClass(RandomPointInputFormat.class);  
 	    FileInputFormat.addInputPath(job, new Path(inputFile));
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);	
@@ -80,7 +94,6 @@ public class ProjectMain {
 	    job.setOutputKeyClass(Text.class);
 	    job.setOutputValueClass(TopPerfDistanceWritable.class);
 	    job.setOutputFormatClass(TextOutputFormat.class);
-	    job.setInputFormatClass(RandomPointInputFormat.class);  
 	    FileInputFormat.addInputPath(job, new Path(inputFile));
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);	
