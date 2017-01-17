@@ -1,7 +1,13 @@
 package bigdata;
 
+<<<<<<< HEAD
 import java.io.File;
+=======
+import java.io.BufferedReader;
+import java.io.FileReader;
+>>>>>>> 089428c637b4c1e011027694d1c8cd07576ee5c5
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -12,7 +18,12 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+<<<<<<< HEAD
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+=======
+import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+>>>>>>> 089428c637b4c1e011027694d1c8cd07576ee5c5
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
@@ -42,21 +53,22 @@ public class ProjectMain {
 	    job.setOutputValueClass(SumUpWritable.class);
 	    job.setInputFormatClass(SequenceFileInputFormat.class);  
 	    job.setOutputFormatClass(TextOutputFormat.class);
+
+	    FileInputFormat.addInputPath(job, new Path(inputFile));
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
 	    
-	    File folder = new File(inputFile);
-	    File[] listOfFiles = folder.listFiles();
-	    /*for (int i = 0; i < listOfFiles.length; i++) {
-	    	if (listOfFiles[i].isFile()) {
-	    		SequenceFileInputFormat.addInputPath(job, new Path(listOfFiles[i].getName()));
-	    		} else if (listOfFiles[i].isDirectory()) {
-	    			System.out.println("Directory " + listOfFiles[i].getName());
-	    			}
-	    	}*/
+	    job.setNumReduceTasks(1);
+	    DirectoryReader dirReader = new DirectoryReader(inputFile);
+	    ArrayList<String> files = dirReader.getFileList(); //explorer.listDirectory();
+	    for(String current: files){
+	    	MultipleInputs.addInputPath(job, new Path(inputFile + current), TextInputFormat.class, SumUpMapper.class);
+	    	
+	    	BufferedReader brFile = new BufferedReader(new FileReader(inputFile + current));
+	        String firstLine = brFile .readLine();
+	        conf.set(current, firstLine);
+	        brFile.close();
+	    }
 	    
-	    //for (Path path: createInputFiles(conf, snapshotFiles, mappers)) {
-	    //    SequenceFileInputFormat.addInputPath(job, path);
-	    //}
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
 	
