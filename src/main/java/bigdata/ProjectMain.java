@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -70,13 +71,13 @@ public class ProjectMain {
 	}
 	
 	private static void topKPopTreatment(String whichTop) throws Exception {
-		String middlePath = "/users/acalas001/TP3_2_ex2";
+		String middlePath = generateRandomFile("topkpop");
 		topKPopFirstJob(inputFile, middlePath, whichTop);
 		topKPopSecondJob(middlePath, outputFile, whichTop);
 	}
 	
 	private static void topKPopFirstJob(String input, String output, String whichTop) throws Exception{
-		Configuration conf = new Configuration();		
+		Configuration conf = new Configuration();	
 		conf.set("kValue", kValue);		
 		conf.set("whichTop", whichTop);
 	    Job job = Job.getInstance(conf, "TopKPopMapReduce");
@@ -86,18 +87,19 @@ public class ProjectMain {
 	    job.setMapOutputKeyClass(Text.class);
 	    job.setMapOutputValueClass(TopRaceWritable.class);
 	    job.setReducerClass(TopKPopFirstReducer.class);
-	    job.setOutputKeyClass(Text.class);
+	    job.setOutputKeyClass(NullWritable.class);
 	    job.setOutputValueClass(TopRaceWritable.class);
 	    job.setOutputFormatClass(TextOutputFormat.class);
-	    FileInputFormat.addInputPath(job, new Path(inputFile));
-	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
+	    FileInputFormat.addInputPath(job, new Path(input));
+	    FileOutputFormat.setOutputPath(job, new Path(output));
 	    job.waitForCompletion(true);
 	}
 	
 	private static void topKPopSecondJob(String input, String output, String whichTop) throws Exception{
-		Configuration conf = new Configuration();		
+		Configuration conf = new Configuration();	
 		conf.set("kValue", kValue);		
 		conf.set("whichTop", whichTop);
+		conf.set("middlePath", input);	
 	    Job job = Job.getInstance(conf, "TopKPopMapReduce");
 	    job.setNumReduceTasks(1);
 	    job.setJarByClass(TopKPopMapReduce.class);
@@ -108,9 +110,15 @@ public class ProjectMain {
 	    job.setOutputKeyClass(Text.class);
 	    job.setOutputValueClass(TopRaceWritable.class);
 	    job.setOutputFormatClass(TextOutputFormat.class);
-	    FileInputFormat.addInputPath(job, new Path(inputFile));
-	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
+	    FileInputFormat.addInputPath(job, new Path(input));
+	    FileOutputFormat.setOutputPath(job, new Path(output));
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);	
+	}
+	
+	public static String generateRandomFile(String part) {
+		Random rand = new Random();
+	    int randomNum = rand.nextInt((99 - 1) + 1) + 1;
+		return "/users/acalas001/" + part + randomNum;
 	}
 	
 	
@@ -163,7 +171,7 @@ public class ProjectMain {
 	
 				// Top k distance and category
 				else if(args[3].equals("2")) {
-					topKPopTreatment("1");
+					topKPopTreatment("2");
 				} 
 				// Top k performance distance
 				else if(args[3].equals("3")) {

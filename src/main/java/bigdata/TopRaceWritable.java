@@ -8,11 +8,13 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 
-public class TopRaceWritable implements WritableComparable<TopRaceWritable>{
+public class TopRaceWritable implements WritableComparable{
 	public String city;
 	public String year;
 	public String distance;
 	public String nbPax;
+	
+	public TopRaceWritable() {}
 	
 	public TopRaceWritable(String city, String year, String distance, String nbPax) {
 		this.city = city;
@@ -40,11 +42,11 @@ public class TopRaceWritable implements WritableComparable<TopRaceWritable>{
 	}
 	@Override
 	public String toString() {
-		return "(" + city + ", " + year + ", " + distance + ") -> " + nbPax;
+		return city + ";" + year + ";" + distance + " : " + nbPax;
 	}
 	
 	public String toStringAddedValue(String addedValue) {
-		return "(" + city + ", " + year + ", " + distance + ", " + addedValue + ") -> " + nbPax;
+		return city + ";" + year + ";" + distance + ";" + addedValue + " : " + nbPax;
 	}
 
 	public int compareTo(TopRaceWritable otherTop) {
@@ -70,5 +72,24 @@ public class TopRaceWritable implements WritableComparable<TopRaceWritable>{
 			return comparedCities;
 		}
 	}
+	
+	@Override
+	public boolean equals(Object otherTop) {
+		if(otherTop instanceof TopRaceWritable) {
+			return this.getKey().equals(((TopRaceWritable) otherTop).getKey());
+		}
+		return false;
+	}
 
+	public int compareTo(Object o) {
+		TopRaceWritable otherTop = (TopRaceWritable) o;
+		if(Integer.parseInt(this.nbPax) > Integer.parseInt(((TopRaceWritable) otherTop).nbPax)) {
+			return 1;
+		} else if(Integer.parseInt(this.nbPax) < Integer.parseInt(otherTop.nbPax)) {
+			return -1;
+		} else {
+			return compareRace(this, otherTop);
+		}
+	}
+	
 }
