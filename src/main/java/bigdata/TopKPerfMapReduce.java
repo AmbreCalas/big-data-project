@@ -1,6 +1,8 @@
 package bigdata;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
@@ -25,9 +27,23 @@ public class TopKPerfMapReduce {
 					if(top == 1) {
 						context.write(new Text(parts[2]), new TopPerfDistanceWritable(parts[2], parts[3], parts[6]));
 					} else if(top == 2) {
-						context.write(new Text(parts[2]), new TopPerfDistanceCatWritable(parts[2], parts[3], parts[6], parts[4]));
+						context.write(new Text(parts[2]), new TopPerfDistanceCatWritable(parts[2], parts[3], parts[6], getCategory(parts[4])));
 					}
 				}
+			}
+			
+			public String getCategory(String dirtyCategory) {
+				String[] catParts = dirtyCategory.split(" ");
+				boolean isFirst = true;
+				String result = "";
+				for(String part : catParts) {
+					if(!isFirst) {
+						result += part + " ";
+					} else {
+						isFirst = false;
+					}
+				}
+				return result;
 			}
 			
 			public void setUp(Context context) throws IOException, InterruptedException {
@@ -49,7 +65,39 @@ public class TopKPerfMapReduce {
 			public void reduce(Text key, Iterable<TopPerfDistanceWritable> values, Context context) throws IOException, InterruptedException {
 				setUp(context);
 				
-				//context.write(key, maximum);
+				
+				TreeMap<Integer, TopPerfDistanceWritable> sortedPerfs = new TreeMap<Integer, TopPerfDistanceWritable>();
+				for(TopPerfDistanceWritable value : values) {
+					TopPerfDistanceWritable perf = new TopPerfDistanceWritable();
+					if(top == 1) {
+						perf = new TopPerfDistanceWritable(value.distance, value.perf, value.pax);
+					} else if(top == 2) {
+						perf = new TopPerfDistanceCatWritable(value.distance, value.perf, value.pax, ((TopPerfDistanceCatWritable) value).category);
+					}
+					
+					sortedPerfs.put(timeInSeconds(perf.perf), perf);
+					if (sortedPerfs.size() > k) {
+						sortedPerfs.remove(sortedPerfs.lastKey());
+					}
+				}
+				
+				long position = 1;
+				for(Map.Entry<Integer, TopPerfDistanceWritable> perf : sortedPerfs.entrySet()) {
+					if(top == 1) {
+						context.write(new Text(perf.getValue().distance + " - " + Long.toString(position)), perf.getValue());
+					} else if(top == 2) {
+						context.write(new Text("(" + perf.getValue().distance + ", " + ((TopPerfDistanceCatWritable) perf.getValue()).category + ") - " + Long.toString(position)), perf.getValue());
+					}
+					position++;
+				}
+			}
+			
+			public int timeInSeconds(String time) {
+				String[] timeParts = time.split(":");
+				int hours = Integer.parseInt(timeParts[0]);
+				int minutes = Integer.parseInt(timeParts[1]);
+				int seconds = Integer.parseInt(timeParts[2]);
+				return hours*60*60 + minutes*60 + seconds;
 			}
 			
 			public void setUp(Context context) throws IOException, InterruptedException {

@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.apache.hadoop.io.WritableUtils;
 
 public class TopPerfDistanceCatWritable extends TopPerfDistanceWritable {
-	private String category;
+	public String category;
 	
 	public TopPerfDistanceCatWritable() {
 		super();

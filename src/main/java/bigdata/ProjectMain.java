@@ -25,6 +25,11 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import bigdata.FilesMapReduce.FilesMapper;
 import bigdata.FilesMapReduce.FilesReducer;
+import bigdata.TP3_2_ex2.Combiner;
+import bigdata.TopKClubMapReduce.TopKClubFirstMapper;
+import bigdata.TopKClubMapReduce.TopKClubFirstReducer;
+import bigdata.TopKClubMapReduce.TopKClubSecondMapper;
+import bigdata.TopKClubMapReduce.TopKClubSecondReducer;
 import bigdata.TopKPerfMapReduce.TopKPerfMapper;
 import bigdata.TopKPerfMapReduce.TopKPerfReducer;
 import bigdata.TopKPopMapReduce.TopKPopFirstMapper;
@@ -166,6 +171,49 @@ public class ProjectMain {
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);	
 	}
 	
+	private static void topKClubTreatment() throws Exception {
+		String middlePath = generateRandomFile("topkclub");
+		topKClubFirstJob(inputFile, middlePath);
+		topKClubSecondJob(middlePath, outputFile);
+	}
+	
+	private static void topKClubFirstJob(String input, String output) throws Exception {
+		Configuration conf = new Configuration();			
+		conf.set("kValue", kValue);
+	    Job job = Job.getInstance(conf, "topKClubMapReduce");
+	    job.setNumReduceTasks(1);
+	    job.setJarByClass(TopKClubMapReduce.class);
+	    job.setMapperClass(TopKClubFirstMapper.class);
+	    job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(TopClubWritable.class);
+	    job.setReducerClass(TopKClubFirstReducer.class);
+	    job.setOutputKeyClass(NullWritable.class);
+	    job.setOutputValueClass(TopClubWritable.class);
+	    job.setOutputFormatClass(TextOutputFormat.class);
+	    FileInputFormat.addInputPath(job, new Path(input));
+	    FileOutputFormat.setOutputPath(job, new Path(output));
+	    job.waitForCompletion(true);
+	}
+	
+	private static void topKClubSecondJob(String input, String output) throws Exception {
+		Configuration conf = new Configuration();			
+		conf.set("kValue", kValue);
+		conf.set("middlePath", input);	
+	    Job job = Job.getInstance(conf, "topKClubMapReduce");
+	    job.setNumReduceTasks(1);
+	    job.setJarByClass(TopKClubMapReduce.class);
+	    job.setMapperClass(TopKClubSecondMapper.class);
+	    job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(TopClubWritable.class);   	
+	    job.setReducerClass(TopKClubSecondReducer.class);
+	    job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(TopClubWritable.class);
+	    job.setOutputFormatClass(TextOutputFormat.class);
+	    FileInputFormat.addInputPath(job, new Path(input));
+	    FileOutputFormat.setOutputPath(job, new Path(output));
+	    System.exit(job.waitForCompletion(true) ? 0 : 1);	
+	}
+	
 
 	public static void main(String[] args) throws Exception {
 		inputFile = args[0];
@@ -205,6 +253,10 @@ public class ProjectMain {
 				else if(args[3].equals("4")) {
 					topKPerfTreatment("2");
 				} 
+				// Top k most active club
+				else if(args[3].equals("5")) {
+					topKClubTreatment();
+				}
 				// No more options
 				else {
 					System.out.println("Fourth argument must be 1 or 2");
