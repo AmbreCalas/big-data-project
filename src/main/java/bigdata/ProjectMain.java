@@ -23,8 +23,8 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import bigdata.SumUpMapReduce.SumUpMapper;
-import bigdata.SumUpMapReduce.SumUpReducer;
+import bigdata.FilesMapReduce.FilesMapper;
+import bigdata.FilesMapReduce.FilesReducer;
 import bigdata.TopKPerfMapReduce.TopKPerfMapper;
 import bigdata.TopKPerfMapReduce.TopKPerfReducer;
 import bigdata.TopKPopMapReduce.TopKPopFirstMapper;
@@ -38,15 +38,15 @@ public class ProjectMain {
 	private static String kValue;
 	
 	
-	private static void sumUpTreatment() throws Exception {
+	private static void filesTreatment() throws Exception {
 		Configuration conf = new Configuration();
 	    Job job = Job.getInstance(conf, "SumUpMapReduce");
 	    job.setNumReduceTasks(1);
-	    job.setJarByClass(SumUpMapReduce.class);
-	    job.setMapperClass(SumUpMapper.class);
+	    job.setJarByClass(FilesMapReduce.class);
+	    job.setMapperClass(FilesMapper.class);
 	    job.setMapOutputKeyClass(Text.class);
-	    job.setMapOutputValueClass(SumUpWritable.class);
-	    job.setReducerClass(SumUpReducer.class);
+	    job.setMapOutputValueClass(Text.class);
+	    job.setReducerClass(FilesReducer.class);
 	    job.setOutputKeyClass(Text.class);
 	    job.setOutputValueClass(SumUpWritable.class);
 	    job.setInputFormatClass(SequenceFileInputFormat.class);  
@@ -59,7 +59,7 @@ public class ProjectMain {
 	    DirectoryReader dirReader = new DirectoryReader(inputFile);
 	    ArrayList<String> files = dirReader.getFileList(); //explorer.listDirectory();
 	    for(String current: files){
-	    	MultipleInputs.addInputPath(job, new Path(inputFile + current), TextInputFormat.class, SumUpMapper.class);
+	    	MultipleInputs.addInputPath(job, new Path(inputFile + current), TextInputFormat.class, FilesMapper.class);
 	    	
 	    	BufferedReader brFile = new BufferedReader(new FileReader(inputFile + current));
 	        String firstLine = brFile .readLine();
@@ -153,7 +153,7 @@ public class ProjectMain {
 		} 
 		// Sum up option
 		else if(args[2].equals("1")) {
-			sumUpTreatment();
+			filesTreatment();
 		} 
 		// Top k option
 		else if(args[2].equals("2")) {

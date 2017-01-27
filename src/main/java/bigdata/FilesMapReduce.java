@@ -8,14 +8,15 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
-public class SumUpMapReduce {
+public class FilesMapReduce {
 
 	// CLASS MAPPER
-		public static class SumUpMapper extends Mapper<Object, Text, Text, SumUpWritable>{
+		public static class FilesMapper extends Mapper<Object, Text, Text, Text>{
 			// map function
 			public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 				// split lines to get different informations
-				String[] parts = value.toString().split(";");
+				
+				/*String[] parts = value.toString().split(";");
 				Text raceKey = new Text("");
 				
 				// TO DOOOOOO : TREAT SPEED
@@ -31,7 +32,7 @@ public class SumUpMapReduce {
 					category = treatCategory(parts[8]);
 					raceKey = generateKey(parts[2], category);
 					/*context.write(raceKey, new SumUpWritable(category, parts[2], "1", parts[7], 
-							parts[7], parts[7], Double.toString(speed)));*/
+							parts[7], parts[7], Double.toString(speed)));
 			
 				} 
 				// First name and last name are in the same part
@@ -41,16 +42,17 @@ public class SumUpMapReduce {
 						category = treatCategory(parts[5]);
 						raceKey = generateKey(parts[2], category);	
 						/*context.write(raceKey, new SumUpWritable(category, parts[2], "1", parts[6], 
-								parts[6], parts[6], Double.toString(speed)));*/
+								parts[6], parts[6], Double.toString(speed)));
 					} 
 					// Category is at the right place
 					else {
 						category = treatCategory(parts[7]);
 						raceKey = generateKey(parts[2], category);
 						/*context.write(raceKey, new SumUpWritable(category, parts[2], "1", parts[6], 
-								parts[6], parts[6], Double.toString(speed)));*/
+								parts[6], parts[6], Double.toString(speed)));
 					}
-				}
+					*/
+				context.write(new Text(key.toString()), new Text(value));
 			}
 			
 			// Key generator
@@ -80,9 +82,9 @@ public class SumUpMapReduce {
 	  
 	  
 		// CLASS REDUCER
-		public static class SumUpReducer extends Reducer<Text,SumUpWritable,Text,SumUpWritable> {
-			public void reduce(Text key, Iterable<SumUpWritable> values, Context context) throws IOException, InterruptedException {
-				String[] keyParts = key.toString().split(";");
+		public static class FilesReducer extends Reducer<Text,Text,Text,Text> {
+			public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+				/*String[] keyParts = key.toString().split(";");
 				String category = keyParts[0];
 				String distance = keyParts[1];
 				
@@ -109,7 +111,11 @@ public class SumUpMapReduce {
 						Long.toString(minTimeInSeconds), Long.toString(maxTimeInSeconds), 
 						Long.toString(avgTimeInSeconds), Double.toString(avgSpeed));*/
 				
-				//context.write(key, toReturn);
+				//context.write(key, toReturn);*/
+				for (Text line: values) {
+					context.write(key, line);
+				}
+				
 			}
 		}
 }
