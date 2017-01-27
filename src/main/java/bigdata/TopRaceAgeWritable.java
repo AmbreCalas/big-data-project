@@ -36,33 +36,5 @@ public class TopRaceAgeWritable extends TopRaceWritable {
 		return super.toStringAddedValue(category);
 	}
 	
-	public int compareTo(TopRaceAgeWritable otherTop) {
-		int comparedKeys = super.compareTo(otherTop);
-		if (comparedKeys == 0) {
-			return this.category.compareTo(otherTop.category);
-		}
-		else {
-			return comparedKeys;
-		}
-	}
-	
-	public int compareTo(Object o) {
-		TopRaceAgeWritable otherTop = (TopRaceAgeWritable) o;
-		int comparedKeys = super.compareTo(otherTop);
-		if (comparedKeys == 0) {
-			return this.category.compareTo(otherTop.category);
-		}
-		else {
-			return comparedKeys;
-		}
-	}
-	
-	@Override
-	public boolean equals(Object otherTop) {
-		if(otherTop instanceof TopRaceAgeWritable) {
-			return this.getKey().equals(((TopRaceAgeWritable) otherTop).getKey());
-		}
-		return false;
-	}
 
 }

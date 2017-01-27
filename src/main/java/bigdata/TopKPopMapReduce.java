@@ -2,6 +2,7 @@ package bigdata;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -10,6 +11,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.SortedMapWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -28,9 +30,13 @@ public class TopKPopMapReduce {
 				
 				String[] parts = value.toString().split(";");
 				if(top == 1) {
+					if(parts.length > 3) {
 					context.write(new Text(getRaceKey(parts)), new TopRaceWritable(parts[0], parts[1], parts[2], "1"));
+					}
 				} else if(top == 2) {
+					if(parts.length > 4) {
 					context.write(new Text(getRaceKeyCategory(parts)), new TopRaceAgeWritable(parts[0], parts[1], parts[2], "1", getCategory(parts[4])));
+					}
 				}
 			}
 			
@@ -82,9 +88,13 @@ public class TopKPopMapReduce {
 					count += Integer.parseInt(value.nbPax);
 				}
 				if(top == 1) {
-					context.write(null, new TopRaceWritable(raceKeyParts[0], raceKeyParts[1], raceKeyParts[2], Integer.toString(count)));
+					if(raceKeyParts.length > 2) {
+						context.write(null, new TopRaceWritable(raceKeyParts[0], raceKeyParts[1], raceKeyParts[2], Integer.toString(count)));
+					}
 				} else if(top == 2) {
+					if(raceKeyParts.length > 3) {
 					context.write(null, new TopRaceAgeWritable(raceKeyParts[0], raceKeyParts[1], raceKeyParts[2], Integer.toString(count), raceKeyParts[3]));
+					}
 				}
 			}
 			
@@ -119,7 +129,6 @@ public class TopKPopMapReduce {
 							context.write(new Text(distance), new TopRaceWritable(city, year, distance, nbPax));
 						} else if(parts.length == 4) {
 							
-
 							String city = parts[0];
 							String year = parts[1];
 							String distance = parts[2];
@@ -127,7 +136,7 @@ public class TopKPopMapReduce {
 							String category = popParts[0];
 							String nbPax = popParts[1];
 							
-							context.write(new Text(distance), new TopRaceAgeWritable(city, year, distance, nbPax, category));
+							context.write(new Text(distance + ";" + category), new TopRaceAgeWritable(city, year, distance, nbPax, category));
 						}
 					}
 
@@ -149,29 +158,27 @@ public class TopKPopMapReduce {
 					
 					public void reduce(Text key, Iterable<TopRaceWritable> values, Context context) throws IOException, InterruptedException {
 						setUp(context);
-						int count = 0;
-						//SortedMapWritable sortedRaces = new SortedMapWritable();
-						TreeSet<TopRaceWritable> sortedRaces = new TreeSet<TopRaceWritable>();
-						//Text raceKey = new Text("");
-						int isAdded = 0;
+						TreeMap<Integer, TopRaceWritable> sortedRaces = new TreeMap<Integer, TopRaceWritable>();
 						for(TopRaceWritable value : values) {
-							//raceKey.set(value.getKey());
-							//sortedRaces.put(value, raceKey);
-							if(sortedRaces.add(value)) {
-								isAdded++;
+							TopRaceWritable race = new TopRaceWritable();
+							if(top == 1) {
+								race = new TopRaceWritable(value.city, value.year, value.distance, value.nbPax);
+							} else if(top == 2) {
+								race = new TopRaceAgeWritable(value.city, value.year, value.distance, value.nbPax, ((TopRaceAgeWritable) value).category);
 							}
-							/*if (sortedRaces.size() > k) {
-								sortedRaces.remove(sortedRaces.firstKey());
-							}*/
+							sortedRaces.put(Integer.parseInt(race.nbPax), race);
 							if (sortedRaces.size() > k) {
-								sortedRaces.remove(sortedRaces.first());
+								sortedRaces.remove(sortedRaces.firstKey());
 							}
 						}
+						
 						long position = 1;
-						//for(WritableComparable<TopRaceWritable> race : sortedRaces.keySet()) {
-						for(WritableComparable<TopRaceWritable> race : sortedRaces) {
-							TopRaceWritable thisRace = (TopRaceWritable) race;
-							context.write(new Text(isAdded + " - " + thisRace.distance + " - " + Long.toString(position)), thisRace);
+						for(Map.Entry<Integer, TopRaceWritable> race : sortedRaces.descendingMap().entrySet()) {
+							if(top == 1) {
+								context.write(new Text(race.getValue().distance + " - " + Long.toString(position)), race.getValue());
+							} else if(top == 2) {
+								context.write(new Text("(" + race.getValue().distance + ", " + ((TopRaceAgeWritable) race.getValue()).category + ") - " + Long.toString(position)), race.getValue());
+							}
 							position++;
 						}
 					}
@@ -194,10 +201,10 @@ public class TopKPopMapReduce {
 						// Delete middlepath
 						String middlePath = conf.get("middlePath");
 						File file = new File(middlePath);
-						/*if (file.exists() && file.canWrite())
+						if (file.exists() && file.canWrite())
 						{
 							file.delete();
-						}*/
+						}
 					}
 			}
 }

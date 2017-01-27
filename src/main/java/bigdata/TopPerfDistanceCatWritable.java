@@ -8,6 +8,15 @@ import org.apache.hadoop.io.WritableUtils;
 
 public class TopPerfDistanceCatWritable extends TopPerfDistanceWritable {
 	private String category;
+	
+	public TopPerfDistanceCatWritable() {
+		super();
+	};
+	
+	public TopPerfDistanceCatWritable(String distance, String perf, String pax, String category) {
+		super(distance, perf, pax);
+		this.category = category;
+	}
 
 	public void readFields(DataInput in) throws IOException {
 		super.readFields(in);

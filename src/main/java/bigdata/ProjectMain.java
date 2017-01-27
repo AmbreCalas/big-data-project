@@ -85,10 +85,18 @@ public class ProjectMain {
 	    job.setJarByClass(TopKPopMapReduce.class);
 	    job.setMapperClass(TopKPopFirstMapper.class);
 	    job.setMapOutputKeyClass(Text.class);
-	    job.setMapOutputValueClass(TopRaceWritable.class);
+	    if(whichTop == "1") {
+		    job.setMapOutputValueClass(TopRaceWritable.class);	    	
+	    } else if (whichTop == "2") {
+		    job.setMapOutputValueClass(TopRaceAgeWritable.class);	    	
+	    }
 	    job.setReducerClass(TopKPopFirstReducer.class);
 	    job.setOutputKeyClass(NullWritable.class);
-	    job.setOutputValueClass(TopRaceWritable.class);
+	    if(whichTop == "1") {
+		    job.setOutputValueClass(TopRaceWritable.class);    	
+	    } else if (whichTop == "2") {
+		    job.setOutputValueClass(TopRaceAgeWritable.class);    	
+	    }
 	    job.setOutputFormatClass(TextOutputFormat.class);
 	    FileInputFormat.addInputPath(job, new Path(input));
 	    FileOutputFormat.setOutputPath(job, new Path(output));
@@ -105,10 +113,18 @@ public class ProjectMain {
 	    job.setJarByClass(TopKPopMapReduce.class);
 	    job.setMapperClass(TopKPopSecondMapper.class);
 	    job.setMapOutputKeyClass(Text.class);
-	    job.setMapOutputValueClass(TopRaceWritable.class);
+	    if(whichTop == "1") {
+		    job.setMapOutputValueClass(TopRaceWritable.class);	    	
+	    } else if (whichTop == "2") {
+		    job.setMapOutputValueClass(TopRaceAgeWritable.class);	    	
+	    }
 	    job.setReducerClass(TopKPopSecondReducer.class);
 	    job.setOutputKeyClass(Text.class);
-	    job.setOutputValueClass(TopRaceWritable.class);
+	    if(whichTop == "1") {
+		    job.setOutputValueClass(TopRaceWritable.class);    	
+	    } else if (whichTop == "2") {
+		    job.setOutputValueClass(TopRaceAgeWritable.class);    	
+	    }
 	    job.setOutputFormatClass(TextOutputFormat.class);
 	    FileInputFormat.addInputPath(job, new Path(input));
 	    FileOutputFormat.setOutputPath(job, new Path(output));
@@ -132,10 +148,18 @@ public class ProjectMain {
 	    job.setJarByClass(TopKPerfMapReduce.class);
 	    job.setMapperClass(TopKPerfMapper.class);
 	    job.setMapOutputKeyClass(Text.class);
-	    job.setMapOutputValueClass(TopPerfDistanceWritable.class);
+	    if(whichTop == "1") {
+		    job.setMapOutputValueClass(TopPerfDistanceWritable.class);    	
+	    } else if (whichTop == "2") {
+		    job.setMapOutputValueClass(TopPerfDistanceCatWritable.class);	    	
+	    }
 	    job.setReducerClass(TopKPerfReducer.class);
 	    job.setOutputKeyClass(Text.class);
-	    job.setOutputValueClass(TopPerfDistanceWritable.class);
+	    if(whichTop == "1") {
+		    job.setOutputValueClass(TopPerfDistanceWritable.class); 	
+	    } else if (whichTop == "2") {
+		    job.setOutputValueClass(TopPerfDistanceCatWritable.class);    	
+	    }
 	    job.setOutputFormatClass(TextOutputFormat.class);
 	    FileInputFormat.addInputPath(job, new Path(inputFile));
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
