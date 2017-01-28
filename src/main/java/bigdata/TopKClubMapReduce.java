@@ -1,29 +1,24 @@
 package bigdata;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Reducer.Context;
+
 
 public class TopKClubMapReduce {
 
-	// CLASS FIRST MAPPER
-	public static class TopKClubFirstMapper extends
+	// CLASS MAPPER
+	public static class TopKClubMapper extends
 			Mapper<Object, Text, Text, TopClubWritable> {
-		protected int k = 0;
 
 		// map function
 		public void map(Object key, Text value, Context context)
 				throws IOException, InterruptedException {
-			setUp(context);
 
 			String[] parts = value.toString().split(";");
 			if (parts.length > 8) {
@@ -42,18 +37,11 @@ public class TopKClubMapReduce {
 			}
 			return true;
 		}
-		
-		public void setUp(Context context) throws IOException,
-				InterruptedException {
-			Configuration conf = context.getConfiguration();
-			String kValue = conf.get("kValue");
-			k = Integer.parseInt(kValue);
-		}
 	}
 
-	// CLASS FIRST REDUCER
-	public static class TopKClubFirstReducer extends
-			Reducer<Text, TopClubWritable, NullWritable, TopClubWritable> {
+	// CLASS COMBINER
+	public static class TopKClubCombiner extends
+			Reducer<Text, TopClubWritable, Text, TopClubWritable> {
 
 		public void reduce(Text key, Iterable<TopClubWritable> values,
 				Context context) throws IOException, InterruptedException {
@@ -67,25 +55,13 @@ public class TopKClubMapReduce {
 				}
 				size++;
 			}
-			context.write(null,
+			context.write(new Text(" "),
 					new TopClubWritable(clubName, Integer.toString(size)));
 		}
 	}
-
-	// CLASS SECOND MAPPER
-	public static class TopKClubSecondMapper extends
-			Mapper<Object, Text, Text, TopClubWritable> {
-
-		// map function
-		public void map(Object key, Text value, Context context)
-				throws IOException, InterruptedException {
-			String[] parts = value.toString().split(" : ");
-			context.write(new Text(" "), new TopClubWritable(parts[0], parts[1]));
-		}
-	}
-
-	// CLASS SECOND REDUCER
-	public static class TopKClubSecondReducer extends
+	
+	// CLASS REDUCER
+	public static class TopKClubReducer extends
 			Reducer<Text, TopClubWritable, Text, TopClubWritable> {
 		protected int k = 0;
 
@@ -113,15 +89,6 @@ public class TopKClubMapReduce {
 			Configuration conf = context.getConfiguration();
 			String kValue = conf.get("kValue");
 			k = Integer.parseInt(kValue);
-			
-
-			// Delete middlepath
-			String middlePath = conf.get("middlePath");
-			File file = new File(middlePath);
-			if (file.exists() && file.canWrite())
-			{
-				file.delete();
-			}
 		}
 	}
 }
