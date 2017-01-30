@@ -1,11 +1,13 @@
 package bigdata;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
@@ -15,11 +17,12 @@ public class FilesMapReduce {
 
 	// CLASS MAPPER
 		public static class FilesMapper extends Mapper<Object, Text, Text, CleanWritable>{
+			public static String fileName = "";
 			// map function
 			private static final String[] CATEGORIES = {"VETERAN","SENIOR","JUNIOR","MINIME","CADET","ESPOIR","CADETTE","BENJAMIN","HANDISPORT"};
 			public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 				// split lines to get different informations
-				
+				setup(context);
 				String[] parts = value.toString().split(";");
 				String range = parts[0];
 				String time = "";
@@ -29,13 +32,8 @@ public class FilesMapReduce {
 				String newKey = "";
 				boolean canBeWritten = true;
 				int afterName = 0;
-				FileSplit file = (FileSplit) context.getInputSplit();
-				String[] fileNameSplit = file.getPath().getName().toString().split("/");
-				String fileName = fileNameSplit[fileNameSplit.length - 1];
-				fileName = fileName.substring(0,fileName.length() - 5);
-				
 				// We check if the lastname and the firstname are together or not 
-				if (areTogetherLastFirst(parts[0])) {
+				if (areTogetherLastFirst(parts[1])) {
 						name = parts[1].toUpperCase();
 						afterName = 2;
 				}
@@ -107,6 +105,9 @@ public class FilesMapReduce {
 				else if (time.matches("d{2,2}\\S\\d{2,2}\\S")) {
 					return true;
 				}
+				else if (time.matches("d{2,2}\\S\\S\\d{2,2}\\S")) {
+					return true;
+				}
 				return false;
 			}
 			
@@ -175,7 +176,39 @@ public class FilesMapReduce {
 				}
 				return true;
 			}
-			
+			@Override
+			protected void setup(Context context) throws IOException,
+			        InterruptedException {
+			    InputSplit split = context.getInputSplit();
+			    Class<? extends InputSplit> splitClass = split.getClass();
+
+			    FileSplit fileSplit = null;
+			    if (splitClass.equals(FileSplit.class)) {
+			        fileSplit = (FileSplit) split;
+			        String[] fileNameSplit = fileSplit.getPath().getName().toString().split("/");
+			        fileName = fileNameSplit[fileNameSplit.length - 1];
+					fileName = fileName.substring(0,fileName.length() - 5);
+			    } else if (splitClass.getName().equals(
+			            "org.apache.hadoop.mapreduce.lib.input.TaggedInputSplit")) {
+			        // begin reflection hackery...
+
+			        try {
+			            Method getInputSplitMethod = splitClass
+			                    .getDeclaredMethod("getInputSplit");
+			            getInputSplitMethod.setAccessible(true);
+			            fileSplit = (FileSplit) getInputSplitMethod.invoke(split);
+			            String[] fileNameSplit = fileSplit.getPath().getName().toString().split("/");
+				        fileName = fileNameSplit[fileNameSplit.length - 1];
+						fileName = fileName.substring(0,fileName.length() - 5);
+			            
+			        } catch (Exception e) {
+			            // wrap and re-throw error
+			            throw new IOException(e);
+			        }
+
+			        // end reflection hackery
+			    }
+			}
 	  }
 	  
 		// CLASS REDUCER

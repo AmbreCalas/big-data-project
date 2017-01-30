@@ -3,6 +3,7 @@ package bigdata;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -10,12 +11,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -60,7 +62,13 @@ public class ProjectMain {
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
 	    
 	    job.setNumReduceTasks(1);
-	    FileInputFormat.addInputPath(job, new Path(inputFile));
+	    FileSystem fs = FileSystem.get(new URI("hdfs://lsd:9000"), conf, "acalas001");
+	    RemoteIterator<LocatedFileStatus> files = fs.listFiles(new Path(
+	    inputFile), false);
+	    
+	    while (files.hasNext()) {
+			MultipleInputs.addInputPath(job,files.next().getPath(), TextInputFormat.class, FilesMapper.class);
+		}
 	    
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
