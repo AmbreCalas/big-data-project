@@ -21,9 +21,9 @@ public class TopKClubMapReduce {
 				throws IOException, InterruptedException {
 
 			String[] parts = value.toString().split(";");
-			if (parts.length > 8) {
-				if(!isEmpty(parts[8])) {
-					context.write(new Text(parts[8]), new TopClubWritable(parts[8],	"1"));
+			if (parts.length > 7) {
+				if(!isEmpty(parts[7])) {
+					context.write(new Text(parts[7]), new TopClubWritable(parts[7],	"1"));
 				}
 			}
 		}
