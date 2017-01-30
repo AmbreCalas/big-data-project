@@ -5,11 +5,15 @@ import java.io.File;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -46,7 +50,7 @@ public class ProjectMain {
 	
 	private static void filesTreatment() throws Exception {
 		Configuration conf = new Configuration();
-	    Job job = Job.getInstance(conf, "SumUpMapReduce");
+	    Job job = Job.getInstance(conf, "FilesMapReduce");
 	    job.setNumReduceTasks(1);
 	    job.setJarByClass(FilesMapReduce.class);
 	    job.setMapperClass(FilesMapper.class);
@@ -61,16 +65,7 @@ public class ProjectMain {
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
 	    
 	    job.setNumReduceTasks(1);
-	    DirectoryReader dirReader = new DirectoryReader(inputFile);
-	    ArrayList<String> files = dirReader.getFileList(); //explorer.listDirectory();
-	    for(String current: files){
-	    	MultipleInputs.addInputPath(job, new Path(inputFile + current), TextInputFormat.class, FilesMapper.class);
-	    	
-	    	BufferedReader brFile = new BufferedReader(new FileReader(inputFile + current));
-	        String firstLine = brFile .readLine();
-	        conf.set(current, firstLine);
-	        brFile.close();
-	    }
+	    FileInputFormat.addInputPath(job, new Path(inputFile));
 	    
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
