@@ -9,13 +9,16 @@ public class DirectoryReader {
 	ArrayList <String> fileList;
 	public DirectoryReader (String directoryPath) {
 		this.directoryPath = directoryPath;
+		System.out.println("PATTTTTTH: " + directoryPath);
 		this.fileList = new ArrayList<String>();
 		String [] stringFileList = new File(directoryPath).list(); 	
+		/*
 		for (int i=0; i<stringFileList.length;i++) {
 			if (stringFileList[i].endsWith(".csv")) {
 				fileList.add(stringFileList[i]);
 			}
 		} 
+		*/
 	}
 	
 	public ArrayList <String> getFileList () {

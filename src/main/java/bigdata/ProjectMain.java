@@ -1,19 +1,14 @@
 package bigdata;
 
 
-import java.io.File;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -27,7 +22,9 @@ import bigdata.FilesMapReduce.FilesMapper;
 import bigdata.FilesMapReduce.FilesReducer;
 import bigdata.HistogrammeMapReduce.HistoMapper;
 import bigdata.HistogrammeMapReduce.HistoReducer;
-import bigdata.TP3_2_ex2.Combiner;
+import bigdata.PredictionMapReduce.PredictionCombiner;
+import bigdata.PredictionMapReduce.PredictionMapper;
+import bigdata.PredictionMapReduce.PredictionReducer;
 import bigdata.TopKClubMapReduce.TopKClubCombiner;
 import bigdata.TopKClubMapReduce.TopKClubMapper;
 import bigdata.TopKClubMapReduce.TopKClubReducer;
@@ -61,6 +58,7 @@ public class ProjectMain {
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
 	    
 	    job.setNumReduceTasks(1);
+	    
 	    DirectoryReader dirReader = new DirectoryReader(inputFile);
 	    ArrayList<String> files = dirReader.getFileList(); //explorer.listDirectory();
 	    for(String current: files){
@@ -207,7 +205,34 @@ public class ProjectMain {
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);	
 	}
-
+	
+	
+	private static void predictionTreatment(String category, String previousDistance, String previousTime, String futureDistance) throws Exception {
+		Configuration conf = new Configuration();	
+		conf.set("category", category);
+		conf.set("previousDistance", previousDistance);
+		conf.set("previousTime", previousTime);
+		conf.set("futureDistance", futureDistance);
+	    Job job = Job.getInstance(conf, "PredictionMapReduce");
+	    job.setNumReduceTasks(1);
+	    job.setJarByClass(PredictionMapReduce.class);
+	    job.setMapperClass(PredictionMapper.class);
+	    job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(PredictionWritable.class);	  
+	    job.setCombinerClass(PredictionCombiner.class);  	
+	    job.setReducerClass(PredictionReducer.class);
+	    job.setOutputKeyClass(NullWritable.class);
+		job.setOutputValueClass(PredictionWritable.class);    
+	    job.setOutputFormatClass(TextOutputFormat.class);
+	    FileInputFormat.addInputPath(job, new Path(inputFile));
+	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
+	    System.exit(job.waitForCompletion(true) ? 0 : 1);	
+	}
+	
+	// MAPPER clé: category;distance valeur: category;distance;temps
+	// COMBINER si distance = distance1 récupère place temps1 par rapport à ses collègues et je réécris juste les distance2
+	// REDUCER prends le temps correspondant à la place 
+	
 	public static void main(String[] args) throws Exception {
 		inputFile = args[0];
 		outputFile = args[1];
@@ -264,14 +289,19 @@ public class ProjectMain {
 			}
 			// Get option
 			else {
-				// Top k distance
+				// Histogramme
 				if (args[3].equals("1")) {
 					histogrammeTreatment();
 				}
 
-				// Top k distance and category
+				// Prediction
 				else if (args[3].equals("2")) {
-					//topKPopTreatment("2");
+					if (args.length < 8) {
+						System.out.println("You need at least one more argument for this option");
+					}
+					else {
+						predictionTreatment(args[4], args[5], args[6], args[7]);
+					}
 				}
 			}
 		}
