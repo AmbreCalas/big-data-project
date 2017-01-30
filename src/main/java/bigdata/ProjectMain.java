@@ -51,10 +51,10 @@ public class ProjectMain {
 	    job.setJarByClass(FilesMapReduce.class);
 	    job.setMapperClass(FilesMapper.class);
 	    job.setMapOutputKeyClass(Text.class);
-	    job.setMapOutputValueClass(Text.class);
+	    job.setMapOutputValueClass(CleanWritable.class);
 	    job.setReducerClass(FilesReducer.class);
 	    job.setOutputKeyClass(Text.class);
-	    job.setOutputValueClass(SumUpWritable.class);
+	    job.setOutputValueClass(CleanWritable.class);
 	    job.setInputFormatClass(SequenceFileInputFormat.class);  
 	    job.setOutputFormatClass(TextOutputFormat.class);
 
