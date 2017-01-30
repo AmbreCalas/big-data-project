@@ -52,7 +52,6 @@ public class ProjectMain {
 	    job.setInputFormatClass(SequenceFileInputFormat.class);  
 	    job.setOutputFormatClass(TextOutputFormat.class);
 
-	    FileInputFormat.addInputPath(job, new Path(inputFile));
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
 	    
 	    job.setNumReduceTasks(1);
