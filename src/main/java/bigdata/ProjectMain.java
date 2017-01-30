@@ -25,6 +25,12 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import bigdata.FilesMapReduce.FilesMapper;
 import bigdata.FilesMapReduce.FilesReducer;
+import bigdata.HistogrammeMapReduce.HistoMapper;
+import bigdata.HistogrammeMapReduce.HistoReducer;
+import bigdata.TP3_2_ex2.Combiner;
+import bigdata.TopKClubMapReduce.TopKClubCombiner;
+import bigdata.TopKClubMapReduce.TopKClubMapper;
+import bigdata.TopKClubMapReduce.TopKClubReducer;
 import bigdata.TopKPerfMapReduce.TopKPerfMapper;
 import bigdata.TopKPerfMapReduce.TopKPerfReducer;
 import bigdata.TopKPopMapReduce.TopKPopFirstMapper;
@@ -165,6 +171,42 @@ public class ProjectMain {
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);	
 	}
 	
+	
+	private static void topKClubTreatment() throws Exception {
+		Configuration conf = new Configuration();			
+		conf.set("kValue", kValue);
+	    Job job = Job.getInstance(conf, "topKClubMapReduce");
+	    job.setNumReduceTasks(1);
+	    job.setJarByClass(TopKClubMapReduce.class);
+	    job.setMapperClass(TopKClubMapper.class);
+	    job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(TopClubWritable.class);
+	    job.setCombinerClass(TopKClubCombiner.class);
+	    job.setReducerClass(TopKClubReducer.class);
+	    job.setOutputKeyClass(Text.class);
+	    job.setOutputValueClass(TopClubWritable.class);
+	    job.setOutputFormatClass(TextOutputFormat.class);
+	    FileInputFormat.addInputPath(job, new Path(inputFile));
+	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
+	    System.exit(job.waitForCompletion(true) ? 0 : 1);	
+	}
+	
+	private static void histogrammeTreatment() throws Exception {
+		Configuration conf = new Configuration();	
+	    Job job = Job.getInstance(conf, "TopKPopMapReduce");
+	    job.setNumReduceTasks(1);
+	    job.setJarByClass(HistogrammeMapReduce.class);
+	    job.setMapperClass(HistoMapper.class);
+	    job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(HistogrammeWritable.class);	    	
+	    job.setReducerClass(HistoReducer.class);
+	    job.setOutputKeyClass(NullWritable.class);
+		job.setOutputValueClass(HistogrammeWritable.class);    
+	    job.setOutputFormatClass(TextOutputFormat.class);
+	    FileInputFormat.addInputPath(job, new Path(inputFile));
+	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
+	    System.exit(job.waitForCompletion(true) ? 0 : 1);	
+	}
 
 	public static void main(String[] args) throws Exception {
 		inputFile = args[0];
@@ -204,19 +246,38 @@ public class ProjectMain {
 				else if(args[3].equals("4")) {
 					topKPerfTreatment("2");
 				} 
+				// Top k most active club
+				else if(args[3].equals("5")) {
+					topKClubTreatment();
+				}
 				// No more options
 				else {
-					System.out.println("Fourth argument must be 1 or 2");
+					System.out.println("Fourth argument must be between 1 and 5");
 				}
 			}
 		} 
 		// Prediction option
 		else if(args[2].equals("3")) {
-			// TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-		} 
+			// Not enough arguments
+			if (args.length < 4) {
+				System.out.println("You need at least one more argument for this option");
+			}
+			// Get option
+			else {
+				// Top k distance
+				if (args[3].equals("1")) {
+					histogrammeTreatment();
+				}
+
+				// Top k distance and category
+				else if (args[3].equals("2")) {
+					//topKPopTreatment("2");
+				}
+			}
+		}
 		// No more options
 		else {
-			System.out.println("Third argument must be 1, 2 or 3");
+			System.out.println("Third argument must be between 1 and 3");
 		}
 	}
 }
