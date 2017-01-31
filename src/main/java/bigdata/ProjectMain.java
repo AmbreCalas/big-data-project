@@ -44,6 +44,7 @@ public class ProjectMain {
 	private static String outputFile;
 	private static String kValue;
 	
+	/********************** Adaptation of files *********************/
 	
 	private static void filesTreatment() throws Exception {
 		Configuration conf = new Configuration();
@@ -58,20 +59,24 @@ public class ProjectMain {
 	    job.setOutputValueClass(CleanWritable.class);
 	    job.setInputFormatClass(SequenceFileInputFormat.class);  
 	    job.setOutputFormatClass(TextOutputFormat.class);
-
+	    FileInputFormat.addInputPath(job, new Path(inputFile));
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
 	    
 	    job.setNumReduceTasks(1);
-	    FileSystem fs = FileSystem.get(new URI("hdfs://lsd:9000"), conf, "acalas001");
+	   FileSystem fs = FileSystem.get(new URI("hdfs://lsd:9000"), conf, "acalas001");
 	    RemoteIterator<LocatedFileStatus> files = fs.listFiles(new Path(
 	    inputFile), false);
 	    
 	    while (files.hasNext()) {
-			MultipleInputs.addInputPath(job,files.next().getPath(), TextInputFormat.class, FilesMapper.class);
+	    	LocatedFileStatus f = files.next();
+			MultipleInputs.addInputPath(job,f.getPath(), TextInputFormat.class, FilesMapper.class);
+			System.out.println("FILE " + f.getPath().toString());
 		}
-	    
+	   // MultipleInputs.addInputPath(job,files.next().getPath(), TextInputFormat.class, FilesMapper.class);
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
+	
+	/********************* TOPK ********************/
 	
 	private static void topKPopTreatment(String whichTop) throws Exception {
 		String middlePath = generateRandomFile("topkpop");
@@ -188,6 +193,9 @@ public class ProjectMain {
 	    FileOutputFormat.setOutputPath(job, new Path(outputFile));
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);	
 	}
+	
+	
+	/********************* Histogram and Prediction *********************/
 	
 	private static void histogrammeTreatment() throws Exception {
 		Configuration conf = new Configuration();	

@@ -66,7 +66,7 @@ public class TopKPerfMapReduce {
 				setUp(context);
 				
 				
-				TreeMap<Integer, TopPerfDistanceWritable> sortedPerfs = new TreeMap<Integer, TopPerfDistanceWritable>();
+				TreeMap<Long, TopPerfDistanceWritable> sortedPerfs = new TreeMap<Long, TopPerfDistanceWritable>();
 				for(TopPerfDistanceWritable value : values) {
 					TopPerfDistanceWritable perf = new TopPerfDistanceWritable();
 					if(top == 1) {
@@ -82,7 +82,7 @@ public class TopKPerfMapReduce {
 				}
 				
 				long position = 1;
-				for(Map.Entry<Integer, TopPerfDistanceWritable> perf : sortedPerfs.entrySet()) {
+				for(Map.Entry<Long, TopPerfDistanceWritable> perf : sortedPerfs.entrySet()) {
 					if(top == 1) {
 						context.write(new Text(perf.getValue().distance + " - " + Long.toString(position)), perf.getValue());
 					} else if(top == 2) {
@@ -92,11 +92,12 @@ public class TopKPerfMapReduce {
 				}
 			}
 			
-			public int timeInSeconds(String time) {
-				String[] timeParts = time.split(":");
-				int hours = Integer.parseInt(timeParts[0]);
-				int minutes = Integer.parseInt(timeParts[1]);
-				int seconds = Integer.parseInt(timeParts[2]);
+			public long timeInSeconds(String time) {
+				String myTime = time.trim();
+				String[] timeParts = myTime.split(":");
+				long hours = Long.parseLong(timeParts[0]);
+				long minutes = Long.parseLong(timeParts[1]);
+				long seconds = Long.parseLong(timeParts[2]);
 				return hours*60*60 + minutes*60 + seconds;
 			}
 			

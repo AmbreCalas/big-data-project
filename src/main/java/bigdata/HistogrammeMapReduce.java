@@ -38,7 +38,7 @@ public class HistogrammeMapReduce {
 			String[] catParts = dirtyCategory.split(" ");
 			for(String part: catParts) {
 				for(String cat: CATEGORIES) {
-					if(part.equals(cat)) {
+					if(part.equalsIgnoreCase(cat)) {
 						return part;
 					}
 				}
@@ -61,32 +61,33 @@ public class HistogrammeMapReduce {
 			} catch (Exception e) {
 				return "";
 			}
-			int timeInSeconds = timeInSeconds(time);
+			long timeInSeconds = timeInSeconds(time);
 			
-			int timeLimit1 = (int) ((float) distance / SPEED1) * 60; // 5*60/5 = 60 
-			int timeLimit2 = (int) ((float) distance / SPEED2) * 60; // 5*60/10 = 30
-			int timeLimit3 = (int) ((float) distance / SPEED3) * 60; // 5*60/15 = 20
-			int timeLimit4 = (int) ((float) distance / SPEED4) * 60; // 5*60/20 = 15
+			long timeLimit1 = (long) ((float) distance / SPEED1) * 60; // 5*60/5 = 60 
+			long timeLimit2 = (long) ((float) distance / SPEED2) * 60; // 5*60/10 = 30
+			long timeLimit3 = (long) ((float) distance / SPEED3) * 60; // 5*60/15 = 20
+			long timeLimit4 = (long) ((float) distance / SPEED4) * 60; // 5*60/20 = 15
 			
 			if(timeInSeconds > (timeLimit1 * 60)) {
-				return timeLimit1 + "..+";
+				return Long.toString(timeLimit1) + "..+";
 			} else if(timeInSeconds > (timeLimit2 * 60)) {
-				return Integer.toString(timeLimit2) + ".." + Integer.toString(timeLimit1);
+				return Long.toString(timeLimit2) + ".." + Long.toString(timeLimit1);
 			} else if(timeInSeconds > (timeLimit3 * 60)) {
-				return Integer.toString(timeLimit3) + ".." + Integer.toString(timeLimit2);				
+				return Long.toString(timeLimit3) + ".." + Long.toString(timeLimit2);				
 			} else if(timeInSeconds > (timeLimit4 * 60)) {
-				return Integer.toString(timeLimit4) + ".." + Integer.toString(timeLimit3);				
+				return Long.toString(timeLimit4) + ".." + Long.toString(timeLimit3);				
 			} else if(timeInSeconds < (timeLimit4 * 60)) {
-				return  "0.." + Integer.toString(timeLimit4);				
+				return  "0.." + Long.toString(timeLimit4);				
 			}
 			return "";
 		}
 		
-		public int timeInSeconds(String time) {
-			String[] timeParts = time.split(":");
-			int hours = Integer.parseInt(timeParts[0]);
-			int minutes = Integer.parseInt(timeParts[1]);
-			int seconds = Integer.parseInt(timeParts[2]);
+		public long timeInSeconds(String time) {
+			String myTime = time.trim();
+			String[] timeParts = myTime.split(":");
+			long hours = Long.parseLong(timeParts[0]);
+			long minutes = Long.parseLong(timeParts[1]);
+			long seconds = Long.parseLong(timeParts[2]);
 			return hours*60*60 + minutes*60 + seconds;
 		}
 	}
